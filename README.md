@@ -59,6 +59,7 @@ The orb part is the library's own geometry at its own tuned speed (`MODE_FRAMES`
 | `paused`      | `false`           |                                                                           |
 | `interactive` | `size >= 40`      | hover tilts toward the pointer, lifts the dots under it, lets the pieces drift apart; a tap sends a ripple |
 | `intro`       | `false`           | play the orb → mark settle once on mount                                  |
+| `startAt`     | shared clock      | run on the instance's own clock, starting this many seconds into the state's cycle (e.g. `3.3` starts a hand-off state on the mark). The demo's showreel uses it |
 
 All other `<canvas>` props pass through.
 

@@ -33,6 +33,13 @@ export interface AnkraOrbProps extends Omit<CanvasHTMLAttributes<HTMLCanvasEleme
   interactive?: boolean
   /** Play the orb → mark settle once on mount. @default false */
   intro?: boolean
+  /**
+   * Run this instance on its own clock, starting this many seconds into the
+   * state's cycle when it mounts, instead of the shared clock that keeps all
+   * orbs in phase. Use it to begin a state at a chosen moment, e.g. on the
+   * mark, for a showreel. Remount (change `key`) to restart.
+   */
+  startAt?: number
   style?: CSSProperties
 }
 
@@ -84,6 +91,11 @@ const now = () => (typeof performance !== 'undefined' ? performance.now() / 1000
 
 function prefersReducedMotion(): boolean {
   return typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches
+}
+
+/** Seconds on an instance's own clock: `startAt` at mount, then real time (frozen under reduced motion). */
+function ownClock(live: Live, startAt: number, speed: number): number {
+  return prefersReducedMotion() ? startAt : (now() - live.mount) * speed + startAt
 }
 
 /** Advance the eased pointer state by wall-clock time and build the frame input. */
@@ -211,6 +223,7 @@ export function AnkraOrb({
   paused = false,
   interactive,
   intro = false,
+  startAt,
   style,
   'aria-label': ariaLabel,
   onPointerEnter,
@@ -305,8 +318,14 @@ export function AnkraOrb({
   // library's effect only restarts when the look actually changes.
   const frame = useMemo<ModeFrame>(
     () => (outSize, t) =>
-      ankraFrame(stillState(state), size, t, step(live.current, isInteractive, intro, dark), outSize),
-    [state, size, isInteractive, intro, dark]
+      ankraFrame(
+        stillState(state),
+        size,
+        startAt === undefined ? t : ownClock(live.current, startAt, speed),
+        step(live.current, isInteractive, intro, dark),
+        outSize
+      ),
+    [state, size, isInteractive, intro, dark, startAt, speed]
   )
 
   // ---- large path: same geometry, our own loop -------------------------
@@ -324,7 +343,8 @@ export function AnkraOrb({
       ctx.clearRect(0, 0, size, size)
       const input = step(live.current, isInteractive, intro, dark)
       // reduced motion: a fixed instant (inside the emoji's hold, before any hand-off)
-      const t = prefersReducedMotion() ? 0.6 : now() * speed
+      const t =
+        startAt !== undefined ? ownClock(live.current, startAt, speed) : prefersReducedMotion() ? 0.6 : now() * speed
       paintLarge(ctx, ankraFrame(stillState(state), size, t, input), dark, rgb)
     }
     if (prefersReducedMotion()) {
@@ -368,7 +388,7 @@ export function AnkraOrb({
       io?.disconnect()
       document.removeEventListener('visibilitychange', onVis)
     }
-  }, [large, state, size, dark, tint, speed, paused, isInteractive, intro])
+  }, [large, state, size, dark, tint, speed, paused, isInteractive, intro, startAt])
 
   // The span hosts color/theme resolution (it inherits `currentColor`).
   const { className, ...canvasProps } = rest

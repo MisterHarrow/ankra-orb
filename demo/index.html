@@ -29,7 +29,22 @@
   .note { color: var(--soft); margin: -8px 0 18px; line-height: 1.6; max-width: 640px; }
   footer { display: flex; gap: 10px; flex-wrap: wrap; color: var(--soft); margin-top: 72px; padding-top: 20px; border-top: 1px solid var(--hair); }
   .hero { display: grid; place-items: center; padding: 24px 0 8px; }
-  .hero p { color: var(--soft); letter-spacing: .2em; margin: 18px 0 0; }
+  .reel { display: grid; justify-items: center; }
+  .reel-stage { position: relative; }
+  .reel-layer { position: absolute; inset: 0; }
+  .reel-layer.in { animation: reel-in .6s ease both; }
+  .reel-layer.out { animation: reel-out .6s ease both; pointer-events: none; }
+  @keyframes reel-in { from { opacity: 0 } to { opacity: 1 } }
+  @keyframes reel-out { from { opacity: 1 } to { opacity: 0 } }
+  .reel-label { display: flex; gap: 14px; align-items: baseline; margin: 22px 0 12px; letter-spacing: .14em; min-height: 1.4em; }
+  .reel-count { color: var(--soft); font-variant-numeric: tabular-nums; letter-spacing: .08em; }
+  .reel-dots { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; max-width: 320px; }
+  .reel-dots button { width: 6px; height: 6px; padding: 0; border: 0; border-radius: 50%; background: var(--hair); cursor: pointer; transition: background .3s, transform .3s; }
+  .reel-dots button:hover { background: var(--soft); }
+  .reel-dots button.on { background: var(--ink); transform: scale(1.35); }
+  .reel-dots button:focus-visible { outline: 1px solid var(--soft); outline-offset: 3px; }
+  .reel-hint { color: var(--soft); letter-spacing: .2em; margin: 16px 0 0; }
+  @media (prefers-reduced-motion: reduce) { .reel-layer.in, .reel-layer.out { animation-duration: 0s; } }
   .scroller { overflow-x: auto; margin: 0 -24px; padding: 0 24px; }
   .grid { display: grid; grid-template-columns: 80px repeat(5, minmax(0, 1fr)); border-top: 1px solid var(--hair); min-width: 680px; }
   .grid > div { padding: 18px 8px; border-bottom: 1px solid var(--hair); display: flex; align-items: center; gap: 18px; justify-content: center; flex-wrap: wrap; }

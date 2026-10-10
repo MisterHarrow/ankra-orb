@@ -1,4 +1,4 @@
-import { StrictMode, useState } from 'react'
+import { StrictMode, useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 
 import { AnkraOrb, ThinkingOrb } from '../src'
@@ -31,8 +31,7 @@ function App() {
         </p>
 
         <section className="hero">
-          <AnkraOrb state="idle" size={260} intro />
-          <p>hover · tap</p>
+          <Showreel size={260} />
         </section>
 
         <h2>states × sizes</h2>
@@ -128,6 +127,120 @@ function App() {
           </span>
         </footer>
       </div>
+    </div>
+  )
+}
+
+// ---- showreel: every state in one loop ----------------------------------
+//
+// Each step starts and ends on the Ankra mark, so consecutive steps meet on
+// the same shape and a short cross-fade joins them. The hand-off states
+// (stock orb / emoji) start 3.3s into their 7.2s cycle, which is the mark's
+// hold, and run exactly one cycle: mark → out to the orb/face → back in.
+
+const HANDOFF_START = 3.3
+const HANDOFF = 7.2
+
+interface Step {
+  state: AnkraState
+  label: string
+  startAt: number
+  dur: number
+}
+
+const REEL: Step[] = [
+  { state: 'idle', label: 'idle', startAt: 0, dur: 6 },
+  { state: 'working', label: 'working', startAt: 0, dur: 4.8 },
+  { state: 'working-2', label: 'working 2', startAt: 0, dur: 5.2 },
+  { state: 'thinking', label: 'thinking', startAt: 0, dur: 6 },
+  { state: 'searching', label: 'searching', startAt: 0, dur: 6.4 },
+  ...(
+    [
+      'working',
+      'searching',
+      'solving',
+      'listening',
+      'connecting',
+      'weaving',
+      'composing',
+      'breathing',
+      'shaping',
+    ] as const
+  ).map((s): Step => ({ state: `from-${s}`, label: `${s} orb → ankra`, startAt: HANDOFF_START, dur: HANDOFF })),
+  ...(
+    [
+      ['happy', 'happy'],
+      ['sad', 'sad'],
+      ['confused', 'confused'],
+      ['wink', 'wink'],
+      ['euro', '€ eyes'],
+    ] as const
+  ).map(([e, label]): Step => ({ state: `emoji-${e}`, label, startAt: HANDOFF_START, dur: HANDOFF })),
+]
+
+const INTRO_EXTRA = 3 // the first idle also plays the orb → mark settle
+const FADE_MS = 600
+
+function Showreel({ size }: { size: number }) {
+  const [step, setStep] = useState(0)
+  const [layers, setLayers] = useState([{ id: 0, step: 0 }])
+  const [reduced] = useState(() => matchMedia('(prefers-reduced-motion: reduce)').matches)
+
+  const go = (next: number) => {
+    setStep(next)
+    setLayers((ls) => [...ls.slice(-1), { id: ls[ls.length - 1].id + 1, step: next }])
+  }
+
+  // advance when the current step has played (not under reduced motion)
+  const current = layers[layers.length - 1]
+  useEffect(() => {
+    if (reduced) return
+    const extra = current.id === 0 ? INTRO_EXTRA : 0
+    const timer = setTimeout(() => go((step + 1) % REEL.length), (REEL[step].dur + extra) * 1000)
+    return () => clearTimeout(timer)
+  }, [step, current.id, reduced])
+
+  // drop the outgoing layer once it has faded
+  useEffect(() => {
+    if (layers.length < 2) return
+    const timer = setTimeout(() => setLayers((ls) => ls.slice(-1)), FADE_MS + 50)
+    return () => clearTimeout(timer)
+  }, [layers])
+
+  return (
+    <div className="reel">
+      <div className="reel-stage" style={{ width: size, height: size }}>
+        {layers.map((l, i) => (
+          <div key={l.id} className={`reel-layer ${i === layers.length - 1 ? 'in' : 'out'}`}>
+            <AnkraOrb
+              state={REEL[l.step].state}
+              size={size}
+              startAt={REEL[l.step].startAt}
+              intro={l.id === 0}
+              aria-label={`Ankra orb: ${REEL[l.step].label}`}
+            />
+          </div>
+        ))}
+      </div>
+      <p className="reel-label" aria-live="polite">
+        <span>{REEL[step].label}</span>
+        <span className="reel-count">
+          {String(step + 1).padStart(2, '0')} / {REEL.length}
+        </span>
+      </p>
+      <div className="reel-dots">
+        {REEL.map((r, i) => (
+          <button
+            key={r.label}
+            type="button"
+            aria-label={`Show ${r.label}`}
+            aria-current={i === step}
+            className={i === step ? 'on' : ''}
+            onClick={() => go(i)}
+          />
+        ))}
+      </div>
+      <p className="reel-hint">hover · tap</p>
     </div>
   )
 }
