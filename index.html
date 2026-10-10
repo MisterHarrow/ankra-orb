@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ankra Orbs</title>
+<meta name="description" content="The Ankra mark drawn in dots, depth-shaded and alive, built on thinking-orbs.">
+<meta property="og:title" content="Ankra Orbs">
+<meta property="og:description" content="The Ankra mark drawn in dots, depth-shaded and alive, built on thinking-orbs.">
+<meta name="theme-color" content="#0d0d0c">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 1600'%3E%3Cg fill='%23111'%3E%3Cpath d='M754 24 124 385v752h1080l-72-128-877-2-1-543 382-223z'/%3E%3Cpath d='M316 946 840 17l661 366v734l-132-234-1-424-480-266-424 753z'/%3E%3Cpath d='m921 273 541 921-651 388-637-375h246l394 222 456-268-420-761z'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root { --paper: #f4f3ef; --ink: #161615; --soft: rgba(22,22,21,.45); --hair: rgba(22,22,21,.1); --panel: #ecebe6; }
+  .dark { --paper: #0d0d0c; --ink: #ecebe6; --soft: rgba(236,235,230,.42); --hair: rgba(236,235,230,.1); --panel: #161615; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 12px; }
+  .page { background: var(--paper); color: var(--ink); min-height: 100vh; padding: 40px 24px 80px; transition: background .6s, color .6s; }
+  .wrap { max-width: 1040px; margin: 0 auto; }
+  header { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-bottom: 40px; }
+  h1 { font-size: 13px; font-weight: 500; letter-spacing: .2em; text-transform: lowercase; margin: 0; }
+  h2 { font-size: 11px; font-weight: 400; letter-spacing: .2em; text-transform: lowercase; color: var(--soft); margin: 56px 0 18px; }
+  button.toggle { font: inherit; color: var(--soft); background: none; border: 1px solid var(--hair); border-radius: 99px; padding: 6px 14px; cursor: pointer; }
+  a { color: inherit; text-decoration-color: var(--hair); text-underline-offset: 3px; }
+  a:hover { text-decoration-color: var(--soft); }
+  .intro { max-width: 520px; line-height: 1.7; color: var(--soft); margin: -16px 0 8px; font-size: 13px; }
+  .note { color: var(--soft); margin: -8px 0 18px; line-height: 1.6; max-width: 640px; }
+  footer { display: flex; gap: 10px; flex-wrap: wrap; color: var(--soft); margin-top: 72px; padding-top: 20px; border-top: 1px solid var(--hair); }
+  .hero { display: grid; place-items: center; padding: 24px 0 8px; }
+  .reel { display: grid; justify-items: center; }
+  .reel-stage { position: relative; }
+  .reel-layer { position: absolute; inset: 0; }
+  .reel-layer.in { animation: reel-in .6s ease both; }
+  .reel-layer.out { animation: reel-out .6s ease both; pointer-events: none; }
+  @keyframes reel-in { from { opacity: 0 } to { opacity: 1 } }
+  @keyframes reel-out { from { opacity: 1 } to { opacity: 0 } }
+  .reel-label { display: flex; gap: 14px; align-items: baseline; margin: 22px 0 12px; letter-spacing: .14em; min-height: 1.4em; }
+  .reel-count { color: var(--soft); font-variant-numeric: tabular-nums; letter-spacing: .08em; }
+  .reel-dots { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; max-width: 320px; }
+  .reel-dots button { width: 6px; height: 6px; padding: 0; border: 0; border-radius: 50%; background: var(--hair); cursor: pointer; transition: background .3s, transform .3s; }
+  .reel-dots button:hover { background: var(--soft); }
+  .reel-dots button.on { background: var(--ink); transform: scale(1.35); }
+  .reel-dots button:focus-visible { outline: 1px solid var(--soft); outline-offset: 3px; }
+  .reel-hint { color: var(--soft); letter-spacing: .2em; margin: 16px 0 0; }
+  @media (prefers-reduced-motion: reduce) { .reel-layer.in, .reel-layer.out { animation-duration: 0s; } }
+  .scroller { overflow-x: auto; margin: 0 -24px; padding: 0 24px; }
+  .grid { display: grid; grid-template-columns: 80px repeat(5, minmax(0, 1fr)); border-top: 1px solid var(--hair); min-width: 680px; }
+  .grid > div { padding: 18px 8px; border-bottom: 1px solid var(--hair); display: flex; align-items: center; gap: 18px; justify-content: center; flex-wrap: wrap; }
+  .grid > .label { justify-content: flex-start; color: var(--soft); }
+  .grid > .head { color: var(--soft); padding: 10px 8px; }
+  .ui { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+  .btn { display: inline-flex; align-items: center; gap: 10px; height: 40px; padding: 0 18px; border-radius: 8px; border: 0; font: inherit; font-size: 13px; color: #fff; background: #2b59ff; }
+  .btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--hair); }
+  .sidebar { width: 76px; height: 220px; border-radius: 12px; background: #111113; display: flex; flex-direction: column; align-items: center; padding-top: 18px; gap: 22px; }
+  .sidebar i { width: 22px; height: 22px; border-radius: 6px; background: rgba(255,255,255,.08); display: block; }
+  .toast { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 10px; background: var(--panel); }
+  .stock { display: flex; gap: 22px; flex-wrap: wrap; align-items: center; }
+  @media (max-width: 720px) { .grid { grid-template-columns: 56px repeat(5, minmax(0, 1fr)); } .grid > div { gap: 10px; padding: 14px 2px; } }
+</style>
+  <script type="module" crossorigin src="./assets/index-CHDsk1Mo.js"></script>
+</head>
+<body>
+<div id="root"></div>
+</body>
+</html>
